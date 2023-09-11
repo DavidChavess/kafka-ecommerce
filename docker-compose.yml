@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.2.1
+    container_name: zookeeper
+    volumes:
+      - kafka-data-zookeeper:/var/lib/zookeeper/data
+      - kafka-log-zookeeper:/var/lib/zookeeper/log
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka1:
+    hostname: kafka1
+    image: confluentinc/cp-kafka:7.2.1
+    container_name: kafka1
+    volumes:
+      - kafka-data-broker-1:/var/lib/kafka/data
+      - kafka-log-broker-1:/var/lib/kafka/log
+    ports:
+      - "9094:9094"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:9094,INTERNAL://kafka1:9999
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+volumes:
+  kafka-data-broker-1:
+  kafka-log-broker-1:
+  kafka-data-zookeeper:
+  kafka-log-zookeeper:
